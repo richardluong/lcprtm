@@ -46,7 +46,7 @@ def get_n_best_list_sentence_index(target_sentence):
 #     return "".join(target_sentence.split("|||")[1].split("|")[0:-1:2]).strip().replace("  ", " ").lower()
 
 def get_phrase_pair_lists_and_dicts(source_sentence, n_best_list):
-    print "Getting phrase pairs"
+    # print "Getting phrase pairs"
 
     # source_sentence - source sentence (not parsed)
     # n_best_list - 100 best translations of source sentence (not parsed)
@@ -94,7 +94,7 @@ class NBestList(object):
             yield line.strip().lower()
 
 def get_n_best_list_sblue_score_list_and_total_base_score_list(source_sentence_index, start_line_n_best_list_list):
-    print "Getting n_best_list"
+    # print "Getting n_best_list"
 
     start_line_index = start_line_n_best_list_list[source_sentence_index]
     stop_line_index = start_line_n_best_list_list[source_sentence_index+1]
@@ -152,6 +152,6 @@ def main():
         phrase_pair_dict_n_list, phrase_pair_dict_all = get_phrase_pair_lists_and_dicts(source_sentence, n_best_list)
 
 
-
+main()
 
 
