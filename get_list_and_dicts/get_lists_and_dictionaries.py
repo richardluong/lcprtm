@@ -53,8 +53,6 @@ def get_phrase_pair_lists_and_dicts(source_sentence, n_best_list):
 
     phrase_pair_dict_n_list = []
     phrase_pair_dict_all = {}
-    #sblue_list = []
-    # total_base_score_list = []
 
     for target_sentence in n_best_list:
 
@@ -95,15 +93,8 @@ class NBestList(object):
         for line in open(n_best_list_file_name):
             yield line.strip().lower()
 
-class SBleuScoreList(object):
-    def __iter__(self):
-        for line in open(sblue_score_list_file_name):
-            yield float(line.strip())
-
 def get_n_best_list_sblue_score_list_and_total_base_score_list(source_sentence_index, start_line_n_best_list_list):
     print "Getting n_best_list"
-    all_n_best_list = NBestList()
-    all_sblue_score_list = SBleuScoreList()
 
     start_line_index = start_line_n_best_list_list[source_sentence_index]
     stop_line_index = start_line_n_best_list_list[source_sentence_index+1]
@@ -159,9 +150,6 @@ def main():
         print "Getting everything for source_sentence #{}".format(i+1)
         n_best_list, sblue_score_list, total_base_score_list = get_n_best_list_sblue_score_list_and_total_base_score_list(i, start_line_n_best_list_list)
         phrase_pair_dict_n_list, phrase_pair_dict_all = get_phrase_pair_lists_and_dicts(source_sentence, n_best_list)
-
-main()
-
 
 
 
