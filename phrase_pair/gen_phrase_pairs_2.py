@@ -18,12 +18,14 @@ n_best_list = MyNBestList()
 input_list = MyInput()
 iter_nbest = iter(n_best_list)
 
-dictonary = {}
+phrase_pair_list = []
 
 target_sentence = iter_nbest.next()
 
 for n, input_sentence in enumerate(input_list):
 	input_words = input_sentence.strip().split(" ")
+
+	dictonary = {}
 
 	while (n == int(target_sentence.split("|||")[0].strip())):
 		print "Getting phrases from {}th source sentence".format(n)
@@ -46,9 +48,7 @@ for n, input_sentence in enumerate(input_list):
 		except StopIteration:
 			break
 
-f = open("phrase_pairs.txt", "w+")
-for key,value in dictonary.iteritems():
-	f.write("'{}','{}':{}\n".format(key[0], key[1], value))
+	phrase_pair_list.append(dictonary)
 
 
 
