@@ -19,7 +19,7 @@ dictionary = corpora.Dictionary(line.lower().split() for line in open('corpus.en
 # once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq == 1]
 # dictionary.filter_tokens(once_ids) # remove stop words and words that appear only once
 dictionary.compactify()
-dictionary.save_as_text('tmp/dictionary.dict') # store the dictionary, for future reference
+dictionary.save_as_text('data/dictionary.dict') # store the dictionary, for future reference
 
 corpus = MyCorpus()
-corpora.MmCorpus.serialize('tmp/corpus.mm', corpus)
+corpora.MmCorpus.serialize('data/corpus.mm', corpus)

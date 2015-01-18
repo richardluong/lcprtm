@@ -2,9 +2,9 @@ from gensim import corpora, models, similarities
 import logging, gensim, bz2
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-lda = models.LdaModel.load('tmp/model_3.lda')
+lda = models.LdaModel.load('data/model.lda')
 
-f = open("tmp/log.txt", "w+")
+f = open("tmp/weight_initialization.txt", "w+")
 i = 0
 
 topics = lda.show_topics(formatted = False, num_topics=-1, num_words=-1)

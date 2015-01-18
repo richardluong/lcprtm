@@ -2,8 +2,8 @@ from gensim import corpora, models, similarities
 import logging, gensim, bz2
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-lda = models.LdaModel.load('tmp/model_2.lda')
-dictionary = corpora.Dictionary.load('tmp/dictionary.dict')
+lda = models.LdaModel.load('data/model.lda')
+dictionary = corpora.Dictionary.load('data/dictionary.dict')
 # lda.print_topics(100)
 # print lda.print_topic(0)
 
