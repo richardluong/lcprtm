@@ -1,9 +1,10 @@
 from __future__ import division
 
 import numpy as np
-from gensim import corpora
 
-debug_mode = True
+debug_mode = False
+debug_mode_verbose = False
+
 
 class CPTMNeuralNetwork():
 
@@ -99,7 +100,7 @@ class CPTMNeuralNetwork():
             count = mini_batch[(f, e)]
             error_term = error_term_dict[(f, e)]
 
-            if False:
+            if debug_mode_verbose:
                 print "For phrase pair (f, e):", f, e
                 print "Sum of bag of words, x_f:", sum(x_f)
                 print "Sum of bag of words, x_e:", sum(x_e)
@@ -109,7 +110,7 @@ class CPTMNeuralNetwork():
             d_W1 += (-1)*count * error_term * W1_gradient
             d_W2 += (-1)*count * error_term * W2_gradient
 
-        if debug_mode:
+        if debug_mode or debug_mode_verbose:
             print "--------------------------------------------"
             print "Average absolute change for an element in W1"
             print sum(sum(np.absolute(d_W1))) / d_W1.size
@@ -212,72 +213,3 @@ def new_feature_value(nn, phrase_pair_dict, dictionary):
         count = phrase_pair_dict[(f, e)]
         feature_value += count * np.dot(y_f.transpose(), y_e)
     return feature_value[0, 0]
-
-
-"""
-input_dim = 10
-hidden_dim = 5
-output_dim = 5
-
-nn = CPTMNeuralNetwork([input_dim, hidden_dim, output_dim])
-x_f = np.ones((input_dim, 1))
-x_e = np.ones((input_dim, 1))
-W1_gradient, W2_gradient = nn.get_theta_gradients(x_f, x_e)
-print "W1_gradient", W1_gradient.shape, "W2_gradient", W2_gradient.shape
-
-dictionary_path = '../my_files/deerwester.dict'
-dictionary = corpora.Dictionary.load(dictionary_path)
-phrase_pair_dict = {
-    ("fawn nunnery", "woods spiders"): 3
-}
-"""
-
-"""
-def get_error_term_dict(
-        phrase_pair_dict_all, phrase_pair_list_hypothesis
-        sBleu_list, xBleu,
-        Ej_translation_probability_list,
-        new_feature_weight=1):
-"""
-"""
-phrase_pair_dict_all = {
-    ("fawn nunnery", "woods spiders"): 3
-}
-phrase_pair_list_hypothesis = [
-    {("fawn nunnery", "woods spiders"): 3}
-]
-sBleu_list = [4]
-xBleu = 5
-Ej_translation_probability_list = [1]
-print get_error_term_dict(
-    phrase_pair_dict, phrase_pair_list_hypothesis,
-    sBleu_list, xBleu,
-    Ej_translation_probability_list)
-"""
-
-"""
-print
-print "Weights before update mini batch"
-print nn.weights
-nn.update_mini_batch(phrase_pair_dict, 0.001, dictionary)
-print
-print "Weights after update mini batch"
-print nn.weights
-
-phrase1 = "fawn nunnery"
-x1 = np.zeros((input_dim, 1))
-for word in phrase1.split(" "):
-    word_index = dictionary.token2id[word]
-    x1[word_index] += 1
-print
-print "Phrase:", phrase1
-print "Word vector:"
-print x1
-print "Network output (feedforward)"
-print nn.feedforward(x1)
-"""
-
-# w1 = nn.weights[0]
-# z_1 = nn.get_z(w1, np.ones((10,1)))
-# y_1 = nn.get_y(z_1)
-# print y_1

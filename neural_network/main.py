@@ -22,11 +22,16 @@ from modules.xbleu import xbleu, get_Ej_translation_probability_list
 from gensim import corpora
 
 debug_mode = True
+debug_mode_verbose = False
+
+learning_rate = 0.001  # for the neural network
+smoothing_factor = 1  # see Equation 6 in the paper
 
 
-def main():
-    print "Loading and initializing system"
-    W1 = np.loadtxt("data/weight_initialization.txt")
+def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
+         learning_rate, smoothing_factor):
+    print "Loading and initializing neural network"
+    W1 = np.loadtxt("data/weight_initialization.gz").transpose()
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("data/dictionary.dict")
@@ -41,7 +46,7 @@ def main():
 
     # randomize training samples
     # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
-    training_set_size = 5
+    training_set_size = 3
     training_order_list = range(training_set_size)
     # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
     #random.shuffle(training_order_list)
@@ -54,14 +59,16 @@ def main():
     # initialize variables
     d_theta_old = [0, 0]  # momentum terms
 
-    old_loss_value_test_set = get_average_loss_value_of_test_sample(test_order_list, nn, dictionary)
+    old_loss_value_test_set = get_average_loss_value_of_test_sample(
+        test_order_list, nn, dictionary, source_file_name,
+        n_best_list_file_name, sbleu_score_list_file_name,
+        smoothing_factor)
     converged = False
     epoch_count = 0
 
     # For debug
     xBleu_history = []
     xBleu_change_history = []
-<<<<<<< HEAD
 
     # train until overfit (early stop)
     print "Start training"
@@ -69,18 +76,20 @@ def main():
         theta_previous = nn.weights
         for i in training_order_list:
             (phrase_pair_dict_all, phrase_pair_dict_n_list,
-                total_base_score_list, sbleu_score_list) = get_everything(i, source_file_name, n_best_list_file_name, sbleu_score_list_file_name)
+                total_base_score_list, sbleu_score_list) \
+                = get_everything(i, source_file_name,
+                                 n_best_list_file_name, sbleu_score_list_file_name)
             xblue_i = xbleu(nn, total_base_score_list, sbleu_score_list,
-                            phrase_pair_dict_n_list, dictionary)
+                            phrase_pair_dict_n_list, dictionary, smoothing_factor)
             Ej_translation_probability_list = get_Ej_translation_probability_list(
-                nn, total_base_score_list, phrase_pair_dict_n_list, dictionary)
+                nn, total_base_score_list, phrase_pair_dict_n_list, dictionary, smoothing_factor)
 
             error_term_dict_i = get_error_term_dict(
                 phrase_pair_dict_all, phrase_pair_dict_n_list,
                 sbleu_score_list, xblue_i,
                 Ej_translation_probability_list)
 
-            if False:
+            if debug_mode_verbose:
                 print "Weights before update"
                 print
                 print "W1"
@@ -90,14 +99,14 @@ def main():
                 print nn.weights[1]
                 print
                 sum_W1_before = sum(sum(nn.weights[0]))
-                print "W1 sum BEFORE:", sum_W1_before
+                print "W1 sum of all elements BEFORE gradient descent:", sum_W1_before
                 sum_W2_before = sum(sum(nn.weights[1]))
-                print "W2 sum BEFORE:", sum_W2_before
+                print "W2 sum of all elements BEFORE gradient descent:", sum_W2_before
 
             d_theta_old = nn.update_mini_batch(
-                phrase_pair_dict_all, 0.001, dictionary, error_term_dict_i, d_theta_old)
+                phrase_pair_dict_all, learning_rate, dictionary, error_term_dict_i, d_theta_old)
 
-            if False:
+            if debug_mode_verbose:
                 print "Weights after update"
                 print
                 print "W1"
@@ -111,13 +120,13 @@ def main():
                 sum_W2_after = sum(sum(nn.weights[1]))
                 print "W2 sum AFTER:", sum_W2_after
 
-                print "W1 sum difference:", sum_W1_after - sum_W1_before
-                print "W2 sum difference:", sum_W2_after - sum_W2_before
+                print "W1 sum of all elements AFTER gradient descent:", sum_W1_after - sum_W1_before
+                print "W2 sum of all elements AFTER gradient descent:", sum_W2_after - sum_W2_before
 
-            # xBleu increases?
-            if False:
+            # check if xBleu increases
+            if debug_mode_verbose:
                 xblue_i_after = xbleu(nn, total_base_score_list, sbleu_score_list,
-                                      phrase_pair_dict_n_list, dictionary)
+                                      phrase_pair_dict_n_list, dictionary, smoothing_factor)
 
                 xBleu_history.append((xblue_i, xblue_i_after))
                 xBleu_change_history.append(xblue_i_after - xblue_i)
@@ -129,12 +138,17 @@ def main():
                 print xBleu_change_history
                 print "-------------------------------------------------------------"
 
+            print "Finished epoch nr", epoch_count, "training sample nr", i
+
         epoch_count += 1
         print "Finished epoch number:", epoch_count
 
         # calculate loss function on test set after each epoch using updated weights
-        loss_value_test_set = get_average_loss_value_of_test_sample(test_order_list, nn, dictionary)
-        print "Old average loss function value (-xBleu) over test set:"
+        loss_value_test_set = get_average_loss_value_of_test_sample(
+            test_order_list, nn, dictionary,
+            source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
+            smoothing_factor)
+        print "Old average loss function value (-xBleu) over test set from previous epoch:"
         print old_loss_value_test_set
         print "Average loss function value with updated weights:"
         print loss_value_test_set
@@ -144,22 +158,30 @@ def main():
             converged = True
             print "CONVERGED!!!!!!!!!!!!"
             print "Saving weights from previous epoch to file"
-            np.savetxt('W1.txt', nn.weights[0])
-            np.savetxt('W2.txt', nn.weights[1])
+            np.savetxt('W1.gz', theta_previous[0])
+            np.savetxt('W2.gz', theta_previous[1])
         else:
-            print "Not converged, keep training..."
+            print "No overfitting, keep training..."
 
 
-def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary):
+def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary,
+                                          source_file_name, n_best_list_file_name,
+                                          sbleu_score_list_file_name, smoothing_factor):
     loss_value_test_set = 0
     for t_i in test_order_list:
         (phrase_pair_dict_n_listase_pair_dict_all, phrase_pair_dict_n_list,
-            total_base_score_list, sbleu_score_list) = get_everything(t_i)
+            total_base_score_list, sbleu_score_list) \
+            = get_everything(t_i, source_file_name, n_best_list_file_name,
+                             sbleu_score_list_file_name)
         xBlue_t_i = xbleu(nn, total_base_score_list, sbleu_score_list,
-                          phrase_pair_dict_n_list, dictionary)
+                          phrase_pair_dict_n_list, dictionary, smoothing_factor)
         loss_value_test_set -= xBlue_t_i
     return loss_value_test_set/len(test_order_list)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], "data/sbleu.txt")
+    if len(sys.argv) >= 4:
+        learning_rate = sys.argv[3]
+    if len(sys.argv) >= 5:
+        smoothing_factor = sys.argv[4]
+    main(sys.argv[1], sys.argv[2], "data/sbleu.txt", learning_rate, smoothing_factor)
