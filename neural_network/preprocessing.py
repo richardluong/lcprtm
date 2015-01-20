@@ -118,6 +118,8 @@ def get_sbleu_file(n_best_list_file_name, reference_file_name):
             except StopIteration:
                 break
 
+    np.savetxt('weight_initialization.txt', np.loadtxt('weight_initialization.txt').transpose())
+
 def main(corpus_reference_file_name, corpus_target_file_name, n_best_list_file_name, reference_file_name):
     if not os.path.exists("data"):
         os.makedirs("data")
