@@ -140,7 +140,7 @@ class SourceSentenceList(object):
         for line in open(source_sentence_list_file_name):
             yield line.strip().lower()
 
-def main():
+def get_everything():
 
     source_sentence_list = SourceSentenceList()
 
@@ -150,8 +150,4 @@ def main():
         print "Getting everything for source_sentence #{}".format(i+1)
         n_best_list, sblue_score_list, total_base_score_list = get_n_best_list_sblue_score_list_and_total_base_score_list(i, start_line_n_best_list_list)
         phrase_pair_dict_n_list, phrase_pair_dict_all = get_phrase_pair_lists_and_dicts(source_sentence, n_best_list)
-
-
-main()
-
 
