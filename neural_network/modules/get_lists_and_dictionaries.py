@@ -1,10 +1,18 @@
 import sbleu, linecache
 from lazy_file_reader import LazyFileReader
 
+
 def get_source_sentence_words(source_sentence):
     return source_sentence.strip().split(" ");
 
 def get_phrase_pair_dict_n(source_sentence, target_sentence):
+    """
+    Returns a dictionary with phrase pairs and its counts of the given source and target sentences.
+
+    @source_sentence - source sentence with tokens/words separated by a whitespace
+    @target_sentence - target sentence, directly from the n best list
+    return - dictionary with phrase pair as key and its count as value
+    """
 
     source_sentence_words = get_source_sentence_words(source_sentence)
     alignments = target_sentence.split("|||")[1].split("|")[1:-1:2]
@@ -42,9 +50,13 @@ def get_n_best_list_sentence_index(target_sentence):
     return int(target_sentence.split("|||")[0].strip())
 
 def get_phrase_pair_lists_and_dicts(source_sentence, n_best_list):
+    """
+    Returns a list of phrase pair dictonaries for a given source sentence and possible translation. Also a dictionary over all n best list translations.
 
-    # source_sentence - source sentence (not parsed)
-    # n_best_list - 100 best translations of source sentence (not parsed)
+    @source_sentence - source sentence with tokens/words separated by a whitespace
+    @n_best_list - n best list of possible translations of source_sentence
+    return - a list of phrase pair dictonaries for a given source sentence and possible translation. Also a dictionary over all n best list translations
+    """
 
     phrase_pair_dict_n_list = []
     phrase_pair_dict_all = {}
@@ -78,6 +90,16 @@ def get_phrase_pair_lists_and_dicts(source_sentence, n_best_list):
     return phrase_pair_dict_n_list, phrase_pair_dict_all
 
 def get_n_best_list_sbleu_score_list_and_total_base_score_list(source_sentence_index, start_line_n_best_list_list, sbleu_score_list_file_name, n_best_list_file_name):
+    """
+    Returns a list with n best translations of a source_sentence, a sentence-level BLEU score list for these translations and a list with the total feature value of these translations.
+
+    @source_sentence_index - index for a source sentence
+    @start_line_n_best_list_list - list of lines in the n best list that should be fetched 
+    @sbleu_score_list_file_name - path to file of the pre-computed sbleu score for all n best list sentences.
+    @n_best_list_file_name - path to n_best_list file
+    return - a list with n best translations of a source_sentence, a sentence-level BLEU score list for these translations and a list with the total feature value of these translations
+    """    
+
     start_line_index = start_line_n_best_list_list[source_sentence_index]
     stop_line_index = start_line_n_best_list_list[source_sentence_index+1]
 
@@ -99,7 +121,13 @@ def get_n_best_list_sbleu_score_list_and_total_base_score_list(source_sentence_i
     return n_best_list, total_base_score_list, sbleu_score_list
 
 def get_start_line_n_best_list_list(n_best_list_file_name):
+    """
+    Returns a list of start line indices where the n best list given a source sentence should be fetched.
 
+    @n_best_list_file_name - path to n_best_list file
+    return - a list of start line indices where the n best list given a source sentence should be fetched
+
+    """
     start_line_n_best_list_list = []
     n_best_list = LazyFileReader(n_best_list_file_name)
     last_index = -1
@@ -113,17 +141,18 @@ def get_start_line_n_best_list_list(n_best_list_file_name):
     start_line_n_best_list_list.append(i+1)
     return start_line_n_best_list_list
 
-class SourceSentenceList(object):
-    def __init__(self, source_sentence_list_file_name):
-        self.source_sentence_list_file_name = source_sentence_list_file_name
-
-    def __iter__(self):
-        for line in open(self.source_sentence_list_file_name):
-            yield line.strip().lower()
-
 def get_everything(source_sentence_index, source_sentence_list_file_name, n_best_list_file_name, sbleu_score_list_file_name):
+    """
+    Returns a list values and parameters needed for the neural network.
 
-    source_sentence_list = SourceSentenceList(source_sentence_list_file_name)
+    @source_sentence_index - index for a source sentence
+    @source_sentence_list_file_name - path to the source_sentence file
+    @n_best_list_file_name - path to n_best_list file
+    @sbleu_score_list_file_name - path to the sbleu file
+    return - phrase_pair_dict_all, phrase_pair_dict_n_list, total_base_score_list, sbleu_score_list
+
+    """
+    source_sentence_list = LazyFileReader(source_sentence_list_file_name)
 
     start_line_n_best_list_list = get_start_line_n_best_list_list(n_best_list_file_name)
 

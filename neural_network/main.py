@@ -24,7 +24,7 @@ from gensim import corpora
 debug_mode = True
 
 def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
-    W1 = np.loadtxt("data/weight_initialization.txt")
+    W1 = np.loadtxt("data/weight_initialization.gz")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("data/dictionary.dict")
