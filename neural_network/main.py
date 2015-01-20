@@ -15,27 +15,26 @@ Goal: to learn W1 and W2
 from __future__ import division
 
 import numpy as np
-import random
-from cptm_neural_network import CPTMNeuralNetwork, get_error_term_dict
-from get_lists_and_dictionaries import get_everything
-from xbleu import xbleu, get_Ej_translation_probability_list
+import random, sys
+from modules.cptm_neural_network import CPTMNeuralNetwork, get_error_term_dict
+from modules.get_lists_and_dictionaries import get_everything
+from modules.xbleu import xbleu, get_Ej_translation_probability_list
 from gensim import corpora
-
 
 debug_mode = True
 
 
 def main():
     print "Loading and initializing system"
-    W1 = get_W1_from_text_file("../lda/data/weight_initialization.txt")
+    W1 = np.loadtxt("data/weight_initialization.txt")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
-    dictionary = corpora.Dictionary.load("../lda/data/dictionary.dict")
+    dictionary = corpora.Dictionary.load("data/dictionary.dict")
 
     training_set_size = 0
     # Each line in source_file is a source sentence.
     # source_file should end with and empty line
-    with open('test.input.tok.1', 'r') as source_file:
+    with open(source_file_name, 'r') as source_file:
         for _ in source_file:
             training_set_size += 1
     training_set_size -= 1  # ends with empty line
@@ -62,6 +61,7 @@ def main():
     # For debug
     xBleu_history = []
     xBleu_change_history = []
+<<<<<<< HEAD
 
     # train until overfit (early stop)
     print "Start training"
@@ -69,7 +69,7 @@ def main():
         theta_previous = nn.weights
         for i in training_order_list:
             (phrase_pair_dict_all, phrase_pair_dict_n_list,
-                total_base_score_list, sbleu_score_list) = get_everything(i)
+                total_base_score_list, sbleu_score_list) = get_everything(i, source_file_name, n_best_list_file_name, sbleu_score_list_file_name)
             xblue_i = xbleu(nn, total_base_score_list, sbleu_score_list,
                             phrase_pair_dict_n_list, dictionary)
             Ej_translation_probability_list = get_Ej_translation_probability_list(
@@ -144,31 +144,10 @@ def main():
             converged = True
             print "CONVERGED!!!!!!!!!!!!"
             print "Saving weights from previous epoch to file"
-            # TODO: Save theta_previous
+            np.savetxt('W1.txt', nn.weights[0])
+            np.savetxt('W2.txt', nn.weights[1])
         else:
             print "Not converged, keep training..."
-
-
-class LazyFileReader(object):
-
-    def __init__(self, path):
-        self.path = path
-
-    def __iter__(self):
-        for line in open(self.path):
-            yield line.strip().lower()
-
-
-def get_W1_from_text_file(path):
-    with open(path, 'r') as W1_text_file:
-        line = map(lambda x: float(x), (W1_text_file.readline().strip()).split(' '))
-        W1 = np.zeros((100, len(line)))
-        W1[0] = line
-
-        for i, line in enumerate(W1_text_file):
-            line = map(lambda x: float(x), (line.strip()).split(' '))
-            W1[i+1] = line
-    return W1.transpose()
 
 
 def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary):
@@ -183,4 +162,4 @@ def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary):
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1], sys.argv[2], "data/sbleu.txt")
