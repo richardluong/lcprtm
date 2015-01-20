@@ -59,6 +59,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
     # initialize variables
     d_theta_old = [0, 0]  # momentum terms
 
+    # calculate average loss function value of test samples
+    print "Calculating average loss function value of test samples using initial values"
     old_loss_value_test_set = get_average_loss_value_of_test_sample(
         test_order_list, nn, dictionary, source_file_name,
         n_best_list_file_name, sbleu_score_list_file_name,
@@ -152,7 +154,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
         print old_loss_value_test_set
         print "Average loss function value with updated weights:"
         print loss_value_test_set
-        print "Difference (new - old):"
+        print "Difference (new_loss_value - old_loss_value):"
         print loss_value_test_set - old_loss_value_test_set
         if loss_value_test_set > old_loss_value_test_set:
             converged = True

@@ -1,2 +1,1 @@
-Smoothing factor
 Weight decay for saturated neurons
