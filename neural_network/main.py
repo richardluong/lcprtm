@@ -92,7 +92,7 @@ def main():
             print "W2 sum difference:", sum_W2_after - sum_W2_before
 
         # xBleu increases?
-        if debug_mode:
+        if False:
             xblue_i_after = xbleu(nn, total_base_score_list, sbleu_score_list,
                                   phrase_pair_dict_n_list, dictionary)
 
