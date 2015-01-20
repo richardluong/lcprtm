@@ -24,7 +24,7 @@ from gensim import corpora
 debug_mode = True
 debug_mode_verbose = False
 
-learning_rate = 0.001  # for the neural network
+learning_rate = 0.3  # for the neural network
 smoothing_factor = 1  # see Equation 6 in the paper
 
 
@@ -46,8 +46,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
 
     # randomize training samples
     # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
-    training_set_size = 3
-    training_order_list = range(training_set_size)
+    training_set_size = 2
+    training_order_list = [10, 11]
     # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
     #random.shuffle(training_order_list)
 

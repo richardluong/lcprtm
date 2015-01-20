@@ -5,6 +5,8 @@ import numpy as np
 debug_mode = False
 debug_mode_verbose = False
 
+momentum_constant = 0.9
+
 
 class CPTMNeuralNetwork():
 
@@ -118,10 +120,10 @@ class CPTMNeuralNetwork():
             print "Average absolute change for an element in W2"
             print sum(sum(np.absolute(d_W2))) / d_W2.size
             print "--------------------------------------------"
-        
+
         # add momentum term
-        d_W1 += 0.99 * d_theta_old[0]
-        d_W2 += 0.99 * d_theta_old[1]
+        d_W1 += momentum_constant * d_theta_old[0]
+        d_W2 += momentum_constant * d_theta_old[1]
 
         # gradient descend
         self.weights[0] -= eta * d_W1
