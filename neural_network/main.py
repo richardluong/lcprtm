@@ -15,26 +15,24 @@ Goal: to learn W1 and W2
 from __future__ import division
 
 import numpy as np
-import random
-from cptm_neural_network import CPTMNeuralNetwork, get_error_term_dict
-from get_lists_and_dictionaries import get_everything
-from xbleu import xbleu, get_Ej_translation_probability_list
+import random, sys
+from modules.cptm_neural_network import CPTMNeuralNetwork, get_error_term_dict
+from modules.get_lists_and_dictionaries import get_everything
+from modules.xbleu import xbleu, get_Ej_translation_probability_list
 from gensim import corpora
-
 
 debug_mode = True
 
-
-def main():
-    W1 = get_W1_from_text_file("../lda/data/weight_initialization.txt")
+def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
+    W1 = get_W1_from_text_file("data/weight_initialization.wi")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
-    dictionary = corpora.Dictionary.load("../lda/data/dictionary.dict")
+    dictionary = corpora.Dictionary.load("data/dictionary.dict")
 
     training_set_size = 0
     # Each line in source_file is a source sentence.
     # source_file should end with and empty line
-    with open('test.input.tok.1', 'r') as source_file:
+    with open(source_file_name, 'r') as source_file:
         for _ in source_file:
             training_set_size += 1
     training_set_size -= 1  # ends with empty line
@@ -47,7 +45,7 @@ def main():
     xBleu_change_history = []
     for i in training_order_list:
         (phrase_pair_dict_all, phrase_pair_dict_n_list,
-            total_base_score_list, sbleu_score_list) = get_everything(i)
+            total_base_score_list, sbleu_score_list) = get_everything(i, source_file_name, n_best_list_file_name, sbleu_score_list_file_name)
         xblue_i = xbleu(nn, total_base_score_list, sbleu_score_list,
                         phrase_pair_dict_n_list, dictionary)
         Ej_translation_probability_list = get_Ej_translation_probability_list(
@@ -130,4 +128,4 @@ def get_W1_from_text_file(path):
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1], sys.argv[2], "data/sbleu.sbleu")
