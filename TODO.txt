@@ -1,0 +1,8 @@
+Randomize training sample
+	How to check number of samples?
+When to stop
+Save W1 and W2 to file
+
+Smoothing factor
+Momentum term
+Weight decay for saturated neurons
