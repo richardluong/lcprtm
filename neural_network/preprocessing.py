@@ -1,4 +1,5 @@
 from gensim import corpora, models, similarities
+import numpy as np
 import gensim, bz2, sys, os
 import modules.sbleu as sbleu
 from modules.lazy_file_reader import LazyFileReader
@@ -61,6 +62,8 @@ def save_topics(lda, dictionary):
             string += str(word[0]) + " "
         f.write(string + "\n")
 
+    np.savetxt('data/weight_initialization.txt', np.loadtxt('data/weight_initialization.txt').transpose())
+
 def get_sentence(s):
     return "".join(s.split("|||")[1].split("|")[0:-1:2]).strip().replace("  ", " ").lower()
 
@@ -85,8 +88,6 @@ def get_sbleu_file(n_best_list_file_name, reference_file_name):
                 hypothesis = iter_n_best.next()
             except StopIteration:
                 break
-
-    np.savetxt('weight_initialization.txt', np.loadtxt('weight_initialization.txt').transpose())
 
 def main(corpus_reference_file_name, corpus_target_file_name, n_best_list_file_name, reference_file_name):
     if not os.path.exists("data"):

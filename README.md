@@ -1,10 +1,10 @@
+[TOC]
+
 Learning Continuous Phrase Repesentations for Translation Modelling
 ===================================================================
 
-* Authors: Kerry Zhang, Richard Luong
-* Student-ID: 2014403073, 2014403075
-
-[TOC]
+* __Authors:__ Kerry Zhang, Richard Luong
+* __Student-ID:__ 2014403073, 2014403075
 
 Description
 -----------
@@ -21,8 +21,8 @@ Dependencies
 ------------
 
 * pyhton 2.7+
-* numPy
-* gensim
+* [NumPy](http://www.numpy.org/)
+* [Gensim](https://radimrehurek.com/gensim/index.html)
 
 How to run
 ----------
@@ -31,14 +31,18 @@ Unzip the archive.
 
 Before the first run, `W1` needs to be initialized, using [Latent Dirchlet Allocation](#latent-dirchlet-allocation).
 
-	python preprocessing.py $corpus_reference $corpus_target $n_best_list $input_file
+	python preprocessing.py $corpus_reference $corpus_target $n_best_list $reference_file
 
-where `$corpus_reference` and `$corpus_target` are paths to the parallell corpuses the bilingual topic modelling should be based on and 
+where `$corpus_reference` and `$corpus_target` are paths to the parallell corpuses the bilingual topic modelling should be based on, `$n_best_list` is a path to a list of the n best translation of a source sentence and `$reference_file` is a path to the reference translation of those source sentences.
 
-After that 
+After that the system should be trained with
 
-	python main.py
+	python main.py $source_file_name $n_best_list
+
+where `$source` is a path to the source sentences and `$n_best_list` is a path to the n best translation of these sentences.
 
 Results
 -------
+
+When the system is trained, the weights of the neural network are written to the files `W1.txt` and `W2.txt`.
 
