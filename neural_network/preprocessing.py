@@ -5,10 +5,16 @@ import modules.sbleu as sbleu
 from modules.lazy_file_reader import LazyFileReader
 
 """
-@corpus_reference_file_name
-@corpus_target_file_name
-@n_best_list_file_name
-@reference_file_name
+
+preprocessing.py
+
+Program that generates all data needed for main.py
+
+@corpus_reference_file_name - path to source language corpus file
+@corpus_target_file_name - path to target language corpus file
+@n_best_list_file_name - path to n best translation of the source sentences
+@reference_file_name - path to reference translation of the source sentences
+
 """
 
 class MyCorpus(object):
@@ -62,7 +68,7 @@ def save_topics(lda, dictionary):
             string += str(word[0]) + " "
         f.write(string + "\n")
 
-    np.savetxt('data/weight_initialization.txt', np.loadtxt('data/weight_initialization.txt').transpose())
+    f.close()
 
 def get_sentence(s):
     return "".join(s.split("|||")[1].split("|")[0:-1:2]).strip().replace("  ", " ").lower()
@@ -89,6 +95,8 @@ def get_sbleu_file(n_best_list_file_name, reference_file_name):
             except StopIteration:
                 break
 
+    f.close()
+
 def main(corpus_reference_file_name, corpus_target_file_name, n_best_list_file_name, reference_file_name):
     if not os.path.exists("data"):
         os.makedirs("data")
@@ -105,9 +113,11 @@ def main(corpus_reference_file_name, corpus_target_file_name, n_best_list_file_n
 
     print "Saving topics to file .."
     save_topics(lda, dictionary)
+    W1 = np.loadtxt('data/weight_initialization.txt').transpose()
+    np.savetxt('data/weight_initialization.gz', W1)  
 
     print "Calucating sbleu scores .."
-    get_sbleu_file(n_best_list_file_name, reference_file_name)    
+    get_sbleu_file(n_best_list_file_name, reference_file_name)  
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

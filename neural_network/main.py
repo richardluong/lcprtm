@@ -31,7 +31,7 @@ smoothing_factor = 1  # see Equation 6 in the paper
 def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
          learning_rate, smoothing_factor):
     print "Loading and initializing neural network"
-    W1 = np.loadtxt("data/weight_initialization.gz").transpose()
+    W1 = np.loadtxt("data/weight_initialization.gz")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("data/dictionary.dict")

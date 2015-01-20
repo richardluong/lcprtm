@@ -1,3 +1,10 @@
+### Custom
+
+*.gz
+*.txt
+neural_network/input/*
+neural_network/data/*
+
 # Created by https://www.gitignore.io
 
 ### Python ###
