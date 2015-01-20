@@ -24,7 +24,7 @@ from gensim import corpora
 debug_mode = True
 
 def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
-    W1 = get_W1_from_text_file("data/weight_initialization.wi")
+    W1 = get_W1_from_text_file("data/weight_initialization.txt")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("data/dictionary.dict")
@@ -44,7 +44,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
     xBleu_history = []
     xBleu_change_history = []
     d_theta_old = [0, 0]  # momentum terms
-    for i in training_order_list:
+    for i in xrange(1):
         (phrase_pair_dict_all, phrase_pair_dict_n_list,
             total_base_score_list, sbleu_score_list) = get_everything(i, source_file_name, n_best_list_file_name, sbleu_score_list_file_name)
         xblue_i = xbleu(nn, total_base_score_list, sbleu_score_list,
@@ -106,6 +106,9 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
             print xBleu_change_history
             print "-------------------------------------------------------------"
 
+    np.savetxt('W1.gz', nn.weights[0])
+    np.savetxt('W2.gz', nn.weights[1])
+
 
 class LazyFileReader(object):
 
@@ -130,4 +133,4 @@ def get_W1_from_text_file(path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], "data/sbleu.sbleu")
+    main(sys.argv[1], sys.argv[2], "data/sbleu.txt")

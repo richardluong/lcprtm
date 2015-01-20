@@ -67,7 +67,7 @@ def run_lda(corpus, num_topics):
 
 def save_topics(lda, dictionary):
 
-    f = open("data/weight_initialization.wi", "w+")
+    f = open("data/weight_initialization.txt", "w+")
 
     topics = lda.show_topics(formatted = False, num_topics=lda.num_topics, num_words=len(dictionary))
     for topic in topics:
@@ -98,7 +98,7 @@ class MyReferenceList(object):
 
 def get_sbleu_file(n_best_list_file_name, reference_file_name):
 
-    f = open("data/sbleu.sbleu", "w+")
+    f = open("data/sbleu.txt", "w+")
     
     n_best_list = MyNbestList(n_best_list_file_name)
     reference_list = MyReferenceList(reference_file_name)
