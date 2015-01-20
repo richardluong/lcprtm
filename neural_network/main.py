@@ -21,7 +21,7 @@ from modules.get_lists_and_dictionaries import get_everything
 from modules.xbleu import xbleu, get_Ej_translation_probability_list
 from gensim import corpora
 
-debug_mode = True
+debug_mode = False
 debug_mode_verbose = False
 
 learning_rate = 0.3  # for the neural network
@@ -44,15 +44,17 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             training_set_size += 1
     training_set_size -= 1  # ends with empty line
 
+    training_order_list = range(training_set_size)
     # randomize training samples
-    # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
-    training_set_size = 2
-    training_order_list = [10, 11]
     # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
+    # do not comment out line below
     #random.shuffle(training_order_list)
 
     # separate into test and training set
-    test_size = max(1, int(0.01*training_set_size))
+    # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
+    # remove test_size = 0, uncomment line below that
+    test_size = 0
+    #test_size = max(3, int(0.01*training_set_size))
     test_order_list = training_order_list[:test_size]
     training_order_list = training_order_list[test_size:]
 
@@ -126,7 +128,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
                 print "W2 sum of all elements AFTER gradient descent:", sum_W2_after - sum_W2_before
 
             # check if xBleu increases
-            if debug_mode_verbose:
+            if True:
                 xblue_i_after = xbleu(nn, total_base_score_list, sbleu_score_list,
                                       phrase_pair_dict_n_list, dictionary, smoothing_factor)
 
@@ -178,7 +180,7 @@ def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary,
         xBlue_t_i = xbleu(nn, total_base_score_list, sbleu_score_list,
                           phrase_pair_dict_n_list, dictionary, smoothing_factor)
         loss_value_test_set -= xBlue_t_i
-    return loss_value_test_set/len(test_order_list)
+    return loss_value_test_set/len(test_order_list) if len(test_order_list) > 0 else 0
 
 
 if __name__ == "__main__":
