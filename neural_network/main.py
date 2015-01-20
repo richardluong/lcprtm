@@ -24,7 +24,7 @@ from gensim import corpora
 debug_mode = True
 
 def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
-    W1 = get_W1_from_text_file("data/weight_initialization.txt")
+    W1 = np.loadtxt("data/weight_initialization.txt")
     W2 = np.identity(100)
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("data/dictionary.dict")
@@ -106,31 +106,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
             print xBleu_change_history
             print "-------------------------------------------------------------"
 
-    np.savetxt('W1.gz', nn.weights[0])
-    np.savetxt('W2.gz', nn.weights[1])
-
-
-class LazyFileReader(object):
-
-    def __init__(self, path):
-        self.path = path
-
-    def __iter__(self):
-        for line in open(self.path):
-            yield line.strip().lower()
-
-
-def get_W1_from_text_file(path):
-    with open(path, 'r') as W1_text_file:
-        line = map(lambda x: float(x), (W1_text_file.readline().strip()).split(' '))
-        W1 = np.zeros((100, len(line)))
-        W1[0] = line
-
-        for i, line in enumerate(W1_text_file):
-            line = map(lambda x: float(x), (line.strip()).split(' '))
-            W1[i+1] = line
-    return W1.transpose()
-
+    np.savetxt('W1.txt', nn.weights[0])
+    np.savetxt('W2.txt', nn.weights[1])
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], "data/sbleu.txt")

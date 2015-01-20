@@ -1,6 +1,7 @@
 from gensim import corpora, models, similarities
 import gensim, bz2, sys, os
 import modules.sbleu as sbleu
+from modules.lazy_file_reader import LazyFileReader
 
 """
 @corpus_reference_file_name
@@ -8,23 +9,6 @@ import modules.sbleu as sbleu
 @n_best_list_file_name
 @reference_file_name
 """
-
-class MyReferenceCorpus(object):
-
-    def __init__(self, corpus_reference_file_name):
-        self.corpus_reference_file_name = corpus_reference_file_name
-
-    def __iter__(self):
-        for line in open(self.corpus_reference_file_name):
-            yield line.lower()
-
-class MyTargetCorpus(object):
-    def __init__(self, corpus_target_file_name):
-        self.corpus_target_file_name = corpus_target_file_name
-
-    def __iter__(self):
-        for line in open(self.corpus_target_file_name):
-            yield line.lower()
 
 class MyCorpus(object):
 
@@ -80,28 +64,12 @@ def save_topics(lda, dictionary):
 def get_sentence(s):
     return "".join(s.split("|||")[1].split("|")[0:-1:2]).strip().replace("  ", " ").lower()
 
-class MyNbestList(object):
-    def __init__(self, n_best_list_file_name):
-        self.n_best_list_file_name = n_best_list_file_name
-
-    def __iter__(self):
-        for line in open(self.n_best_list_file_name):
-            yield line.strip().lower()
-
-class MyReferenceList(object):
-    def __init__(self, reference_file_name):
-        self.reference_file_name = reference_file_name
-
-    def __iter__(self):
-        for line in open(self.reference_file_name):
-            yield line.strip().lower()
-
 def get_sbleu_file(n_best_list_file_name, reference_file_name):
 
     f = open("data/sbleu.txt", "w+")
     
-    n_best_list = MyNbestList(n_best_list_file_name)
-    reference_list = MyReferenceList(reference_file_name)
+    n_best_list = LazyFileReader(n_best_list_file_name)
+    reference_list = LazyFileReader(reference_file_name)
     iter_n_best = iter(n_best_list)
 
     hypothesis = iter_n_best.next()
@@ -124,8 +92,8 @@ def main(corpus_reference_file_name, corpus_target_file_name, n_best_list_file_n
     if not os.path.exists("data"):
         os.makedirs("data")
 
-    corpus_reference = MyReferenceCorpus(corpus_reference_file_name)
-    corpus_target = MyTargetCorpus(corpus_target_file_name)
+    corpus_reference = LazyFileReader(corpus_reference_file_name)
+    corpus_target = LazyFileReader(corpus_target_file_name)
     corpus_combined = MyCorpus(corpus_reference, corpus_target)
 
     print "Building dictionary .."
