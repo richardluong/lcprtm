@@ -69,7 +69,7 @@ class CPTMNeuralNetwork():
             x = np.vectorize(np.tanh)(np.dot(w.transpose(), x))
         return x
 
-    def update_mini_batch(self, mini_batch, eta, dictionary, error_term_dict):
+    def update_mini_batch(self, mini_batch, eta, dictionary, error_term_dict, d_theta_old):
         """
         Update the network's weights (W_1, W_2).
         Calculates the gradients (Equation 7 in the paper)
@@ -110,8 +110,6 @@ class CPTMNeuralNetwork():
 
             d_W1 += (-1)*count * error_term * W1_gradient
             d_W2 += (-1)*count * error_term * W2_gradient
-            #d_W1 += W1_gradient
-            #d_W2 += W2_gradient
 
         if debug_mode:
             print "--------------------------------------------"
@@ -121,9 +119,16 @@ class CPTMNeuralNetwork():
             print "Average absolute change for an element in W2"
             print sum(sum(np.absolute(d_W2))) / d_W2.size
             print "--------------------------------------------"
+
+        # add momentum term
+        d_W1 += 0.99 * d_theta_old[0]
+        d_W2 += 0.99 * d_theta_old[1]
+
         # gradient descend
         self.weights[0] -= eta * d_W1
         self.weights[1] -= eta * d_W2
+
+        return [d_W1, d_W2]
 
 
 def tanh_prime(x):

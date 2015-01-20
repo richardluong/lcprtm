@@ -45,6 +45,7 @@ def main():
 
     xBleu_history = []
     xBleu_change_history = []
+    d_theta_old = [0, 0]  # momentum terms
     for i in training_order_list:
         (phrase_pair_dict_all, phrase_pair_dict_n_list,
             total_base_score_list, sbleu_score_list) = get_everything(i)
@@ -72,7 +73,8 @@ def main():
             sum_W2_before = sum(sum(nn.weights[1]))
             print "W2 sum BEFORE:", sum_W2_before
 
-        nn.update_mini_batch(phrase_pair_dict_all, 0.001, dictionary, error_term_dict_i)
+        d_theta_old = nn.update_mini_batch(
+            phrase_pair_dict_all, 0.001, dictionary, error_term_dict_i, d_theta_old)
 
         if False:
             print "Weights after update"
