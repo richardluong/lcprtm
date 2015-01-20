@@ -106,8 +106,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name):
             print xBleu_change_history
             print "-------------------------------------------------------------"
 
-    np.savetxt('W1.txt', nn.weights[0])
-    np.savetxt('W2.txt', nn.weights[1])
+    np.savetxt('W1.gz', nn.weights[0])
+    np.savetxt('W2.gz', nn.weights[1])
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], "data/sbleu.txt")
