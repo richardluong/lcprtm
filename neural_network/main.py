@@ -31,7 +31,14 @@ def main():
     nn = CPTMNeuralNetwork([W1.shape[0], 100, 100], [W1, W2])
     dictionary = corpora.Dictionary.load("../lda/data/dictionary.dict")
 
-    training_set_size = 887  # TODO: how to check how many?
+    training_set_size = 0
+    # Each line in source_file is a source sentence.
+    # source_file should end with and empty line
+    with open('test.input.tok.1', 'r') as source_file:
+        for _ in source_file:
+            training_set_size += 1
+    training_set_size -= 1  # ends with empty line
+
     training_order_list = range(training_set_size)
     random.shuffle(training_order_list)
     # TODO: while not converged: how to check convergence? Early stop method
