@@ -15,7 +15,7 @@ def xbleu(nn, n_best_list_base_system_total_score_list, s_bleu_list, phrase_pair
     for j, s_bleu_Ej in enumerate(s_bleu_list):
         xbleu += s_bleu_Ej * Ej_translation_probability_list[j]
 
-    return xbleu
+    return xbleu, Ej_translation_probability_list
 
 def get_Ej_translation_probability_list(nn, n_best_list_base_system_total_score_list, phrase_pair_list, dictionary, smoothing_factor):
 

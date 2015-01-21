@@ -21,7 +21,7 @@ from modules.get_lists_and_dictionaries import get_everything
 from modules.xbleu import xbleu, get_Ej_translation_probability_list
 from gensim import corpora
 
-debug_mode = False
+debug_mode = True
 debug_mode_verbose = False
 
 learning_rate = 0.3  # for the neural network
@@ -38,13 +38,16 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
 
     training_set_size = 0
     # Each line in source_file is a source sentence.
-    # source_file should end with and empty line
+    # source_file should end with an empty line
     with open(source_file_name, 'r') as source_file:
         for _ in source_file:
             training_set_size += 1
     training_set_size -= 1  # ends with empty line
 
-    training_order_list = range(training_set_size)
+    # CHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANGE
+    #training_order_list = range(training_set_size)
+    training_set_size = 7
+    training_order_list = [655, 51, 1221, 1283, 559, 1405, 294]
     # randomize training samples
     # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
     # do not comment out line below
@@ -78,22 +81,21 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
     print "Start training"
     while not converged:
         theta_previous = nn.weights
-        for i in training_order_list:
+        for list_index, i in enumerate(training_order_list):
             (phrase_pair_dict_all, phrase_pair_dict_n_list,
                 total_base_score_list, sbleu_score_list) \
                 = get_everything(i, source_file_name,
                                  n_best_list_file_name, sbleu_score_list_file_name)
-            xblue_i = xbleu(nn, total_base_score_list, sbleu_score_list,
-                            phrase_pair_dict_n_list, dictionary, smoothing_factor)
-            Ej_translation_probability_list = get_Ej_translation_probability_list(
-                nn, total_base_score_list, phrase_pair_dict_n_list, dictionary, smoothing_factor)
+            xblue_i, Ej_translation_probability_list = xbleu(
+                nn, total_base_score_list, sbleu_score_list,
+                phrase_pair_dict_n_list, dictionary, smoothing_factor)
 
             error_term_dict_i = get_error_term_dict(
                 phrase_pair_dict_all, phrase_pair_dict_n_list,
                 sbleu_score_list, xblue_i,
                 Ej_translation_probability_list)
 
-            if debug_mode_verbose:
+            if debug_mode:
                 print "Weights before update"
                 print
                 print "W1"
@@ -110,7 +112,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             d_theta_old = nn.update_mini_batch(
                 phrase_pair_dict_all, learning_rate, dictionary, error_term_dict_i, d_theta_old)
 
-            if debug_mode_verbose:
+            if debug_mode:
                 print "Weights after update"
                 print
                 print "W1"
@@ -132,7 +134,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
                 xblue_i_after = xbleu(nn, total_base_score_list, sbleu_score_list,
                                       phrase_pair_dict_n_list, dictionary, smoothing_factor)
 
-                xBleu_history.append((xblue_i, xblue_i_after))
+                xBleu_history.append((i, xblue_i))
                 xBleu_change_history.append(xblue_i_after - xblue_i)
                 print "-------------------------------------------------------------"
                 print "xBleu history: [(xBleu_before_gradient_descent, xBleu_after_gradient_descent)]"
@@ -142,7 +144,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
                 print xBleu_change_history
                 print "-------------------------------------------------------------"
 
-            print "Finished epoch nr", epoch_count, "training sample nr", i
+            print "Finished epoch nr", epoch_count, "training sample nr", list_index + 1,\
+                  "| source sentence nr", i+1
 
         epoch_count += 1
         print "Finished epoch number:", epoch_count
@@ -166,6 +169,7 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             np.savetxt('W2.gz', theta_previous[1])
         else:
             print "No overfitting, keep training..."
+            random.shuffle(training_order_list)
 
 
 def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary,
