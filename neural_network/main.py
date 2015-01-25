@@ -44,20 +44,16 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             training_set_size += 1
     training_set_size -= 1  # ends with empty line
 
-    # CHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANGE
-    training_set_size = 200
+    # uncomment to manually set training_set_size for testing purposes
+    #training_set_size = 30
     training_order_list = range(training_set_size)
-    #training_set_size = 9
-    #training_order_list = [993, 1192, 51, 655, 1221, 1283, 559, 1405, 294]
-    # randomize training samples
-    # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
-    # do not comment out line below
+    # uncomment to randomize training samples
+    # (should be done for deployment, however might be good with reproducable results while testing)
     #random.shuffle(training_order_list)
 
-    # separate into test and training set
-    # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
-    # remove test_set_size = 0, uncomment line below that
     test_set_size = max(10, int(0.1*training_set_size))
+    # uncomment to manually set test_set_size for testing purposes
+    #test_set_size = 5
     test_order_list = training_order_list[-test_set_size:]
     training_order_list = training_order_list[:-test_set_size]
     print "Training sample size:", training_set_size, "(nr of source sentences)"
@@ -108,7 +104,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             if debug_mode:
                 debug_print_weights_after_update(nn, d_theta_old, error_term_dict_i)
 
-            # check if xBleu increases
+            # check if xBleu increases after each iteration for testing purposes
+            # change to >> if True: << if you want to make this check and see output
             if False:
                 xblue_i_after, _ = xbleu(nn, total_base_score_list, sbleu_score_list,
                                          phrase_pair_dict_n_list, dictionary, smoothing_factor)
@@ -143,9 +140,10 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
         loss_value_history.append(loss_value_test_set)
         print_loss_value_history(loss_value_history, test_set_size)
 
-        # TODO: CONVERGENCE TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST
+        # TODO: CONVERGENCE TEST, a simple approach is to stop once the loss function value
+        # of this iteration is worse than the previous one
         #if loss_value_history[-2] > loss_value_history[-1]:
-        if False:
+        if False:  # as of now, run forever. Change this once you have determined a good convergence criteria
             converged = True
             print "CONVERGED!!!!!!!!!!!!"
             print "Saving weights from previous epoch to file"
@@ -153,7 +151,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             np.savetxt('W2.gz', theta_previous[1])
         else:
             print "No overfitting, keep training..."
-            # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
+            # uncomment to randomize training samples. 
+            # commenting out this randomizer to get reproducable results during testing phase of development
             #random.shuffle(training_order_list)
 
 
