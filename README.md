@@ -19,7 +19,7 @@ This is done by a neural network, with one hidden layer. The first layer has the
 
 The initialization of the weights of the first layer to the hidden layer, denoted as `W1`, is done by using a bilingual topic distribution, in this case solved by using Latent Dirchlet Allocation. The weights between the hidden layer and the third layer, `W2`, is an identity matrix.
 
-Optimization of the weights are done with [Stochastic gradient descent](http://en.wikipedia.org/wiki/Stochastic_gradient_descent). The training is stopped according to early stop principle, as suggested in the paper.
+Optimization of the weights are done with [Stochastic gradient descent](http://en.wikipedia.org/wiki/Stochastic_gradient_descent). The training should be stopped according to early stop principle, as suggested in the paper, however we haven't fine tuned the system sufficiently to determine a stop condition as of yet.
 
 Dependencies
 ------------
@@ -45,20 +45,36 @@ After that the system should be trained with
 
 where `$source` is a path to the source sentences and `$n_best_list` is a path to the n best translation of these sentences.
 
-Results
+Output
 -------
 
-When the system is trained, the weights of the neural network are written to the files `W1.gz` and `W2.gz`.
+When the system converges, the weights of the neural network are written to the files `W1.gz` and `W2.gz`.
 
-With the given corpus and n best list from our teacher, an instance of our program managed to increase the expected BLEU score from 1 to 10.
 
-Discussion
+Experiment Results and Discussion
 ----------
 
-Due to limited computing power, we were not able to run the program until it converges. A small training set (3 sentence pairs, 1 sentence test set) converged after 3 hours.
+After multiple overnight test runs of the system that resulted in calculations that outputted NaN due to calculations that accumulated into too large or small numbers, and other issues such as too big gradients resulting in a very unstable gradient descent, we finally managed to get a relatively stable system. The two main factors that required tuning were: `learning_rate` and `smoothing_factor`, which can be altered at the top of `main.py`. See Equation 6 in the paper by Gao et. al. 2013 for an explanation of the smoothing factor.
+
+As of now, the most stable system we have produced came when the parameters were set as follows: `smoothing_factor = 10` and `learning_rate = 1000`. With these parameter values, we conducted two overnight test runs. 
+
+The first was to test the theoretical validity of our system, i.e. whether or not the implemented calculations of the gradients, as suggested by the paper, actually result in a lowering of the loss function defined as $-xBlue$. To do this, we used 30 training samples (sentence number 200 to 230 in the file `test.input.tok.1` provided by our teacher), performed the gradient descent and then tested the new average $-xBlue$ score for the entire training set. I.e. we used the training set as our test set in order to test the theoretical validity of our neural network. The results (See Figure `lcprtm/Result/csv/Theoretical_validity_graph.png` ****INSERT GRAPH SOMEHOW???????????????*****) seem to suggest that the system is indeed performing a correct gradient descent.
+
+The second overnight experiment was conducted on a larger training set with 180 training samples and 20 test samples, this time using source sentences 1 to 180 from our input file `test.input.tok.1` as training samples and sentences 181 to 200 as test samples. Again, the result suggest that the system works (*******INSERT lcprtm/Result/csv/Smoothing10_200-training-samples_graph.png************), however after 14 epochs the gradients became very large and the system calculations outputted NaN again.
+
+********
+TO DO:
+lcprtm/Result/csv innheåller de två sista overnight körningarna jag gjorde som typ confirm att systemet funkar någorlunda bra. Bifoga graferna på nåt sätt?
+********
+
+Conclusion
+----------
+We believe that our neural network correctly learns how to minimize the loss function $-xBleu$ and is relatively stable. Increasing `smoothing_factor` will result in smaller gradients and slower training. Because we are getting NaN values (too big or too small numbers) after certain amounts of epochs with large training sets, we believe that `smoothing_factor` should be increased for a more stable system. By how much can only be determined by trial and error, more experiments need to be conducted in order to tune the parameter `smoothing_factor` in particular, and possibly `learning_rate`. 
+
+As of now, the training will run forever as we have not been able to tune the parameters for a sufficiently stable system in order to determine a good convergence criteria.
 
 References
 ----------
 
-[1]: __Learning Continuous Phrase Representations for Translation Modeling__ by Gao et. al. 2013. 
+\[1\]: __Learning Continuous Phrase Representations for Translation Modeling__ by Gao et. al. 2013. 
 

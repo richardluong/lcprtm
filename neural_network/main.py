@@ -24,8 +24,8 @@ from gensim import corpora
 debug_mode = True
 debug_mode_verbose = False
 
-learning_rate = 0.3  # for the neural network
-smoothing_factor = 1  # see Equation 6 in the paper
+learning_rate = 0.001  # for the neural network
+smoothing_factor = 10  # see Equation 6 in the paper
 
 
 def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
@@ -45,9 +45,10 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
     training_set_size -= 1  # ends with empty line
 
     # CHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANGE
-    #training_order_list = range(training_set_size)
-    training_set_size = 7
-    training_order_list = [655, 51, 1221, 1283, 559, 1405, 294]
+    training_set_size = 200
+    training_order_list = range(training_set_size)
+    #training_set_size = 9
+    #training_order_list = [993, 1192, 51, 655, 1221, 1283, 559, 1405, 294]
     # randomize training samples
     # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
     # do not comment out line below
@@ -55,21 +56,24 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
 
     # separate into test and training set
     # TODO: REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE
-    # remove test_size = 0, uncomment line below that
-    test_size = 0
-    #test_size = max(3, int(0.01*training_set_size))
-    test_order_list = training_order_list[:test_size]
-    training_order_list = training_order_list[test_size:]
+    # remove test_set_size = 0, uncomment line below that
+    test_set_size = max(10, int(0.1*training_set_size))
+    test_order_list = training_order_list[-test_set_size:]
+    training_order_list = training_order_list[:-test_set_size]
+    print "Training sample size:", training_set_size, "(nr of source sentences)"
+    print "Test sample size:", test_set_size, "(nr of source sentences)"
 
     # initialize variables
     d_theta_old = [0, 0]  # momentum terms
 
     # calculate average loss function value of test samples
-    print "Calculating average loss function value of test samples using initial values"
-    old_loss_value_test_set = get_average_loss_value_of_test_sample(
+    print "Calculating average loss function value of test samples using initial weights"
+    initial_loss_value_test_set = get_average_loss_value_of_test_sample(
         test_order_list, nn, dictionary, source_file_name,
         n_best_list_file_name, sbleu_score_list_file_name,
         smoothing_factor)
+    print "Average loss function value:", initial_loss_value_test_set
+    loss_value_history = [initial_loss_value_test_set]
     converged = False
     epoch_count = 0
 
@@ -77,8 +81,11 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
     xBleu_history = []
     xBleu_change_history = []
 
+    seen_nan = 0
+
     # train until overfit (early stop)
-    print "Start training"
+    print
+    print "Start training..."
     while not converged:
         theta_previous = nn.weights
         for list_index, i in enumerate(training_order_list):
@@ -95,44 +102,19 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
                 sbleu_score_list, xblue_i,
                 Ej_translation_probability_list)
 
-            if debug_mode:
-                print "Weights before update"
-                print
-                print "W1"
-                print nn.weights[0]
-                print
-                print "W2"
-                print nn.weights[1]
-                print
-                sum_W1_before = sum(sum(nn.weights[0]))
-                print "W1 sum of all elements BEFORE gradient descent:", sum_W1_before
-                sum_W2_before = sum(sum(nn.weights[1]))
-                print "W2 sum of all elements BEFORE gradient descent:", sum_W2_before
-
             d_theta_old = nn.update_mini_batch(
                 phrase_pair_dict_all, learning_rate, dictionary, error_term_dict_i, d_theta_old)
 
             if debug_mode:
-                print "Weights after update"
-                print
-                print "W1"
-                print nn.weights[0]
-                print
-                print "W2"
-                print nn.weights[1]
-                print
-                sum_W1_after = sum(sum(nn.weights[0]))
-                print "W1 sum AFTER:", sum_W1_after
-                sum_W2_after = sum(sum(nn.weights[1]))
-                print "W2 sum AFTER:", sum_W2_after
-
-                print "W1 sum of all elements AFTER gradient descent:", sum_W1_after - sum_W1_before
-                print "W2 sum of all elements AFTER gradient descent:", sum_W2_after - sum_W2_before
+                debug_print_weights_after_update(nn, d_theta_old, error_term_dict_i)
 
             # check if xBleu increases
-            if True:
-                xblue_i_after = xbleu(nn, total_base_score_list, sbleu_score_list,
-                                      phrase_pair_dict_n_list, dictionary, smoothing_factor)
+            if False:
+                xblue_i_after, _ = xbleu(nn, total_base_score_list, sbleu_score_list,
+                                         phrase_pair_dict_n_list, dictionary, smoothing_factor)
+
+                if np.isnan(xblue_i_after):
+                    converged = True
 
                 xBleu_history.append((i, xblue_i))
                 xBleu_change_history.append(xblue_i_after - xblue_i)
@@ -145,23 +127,25 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
                 print "-------------------------------------------------------------"
 
             print "Finished epoch nr", epoch_count, "training sample nr", list_index + 1,\
-                  "| source sentence nr", i+1
+                  "(of %d)" % (training_set_size - test_set_size), "| source sentence nr", i+1
 
         epoch_count += 1
+        print "====================================="
         print "Finished epoch number:", epoch_count
+        print "====================================="
 
         # calculate loss function on test set after each epoch using updated weights
+        print "Calculating loss function value on test set (%d samples) using new weights" % test_set_size
         loss_value_test_set = get_average_loss_value_of_test_sample(
             test_order_list, nn, dictionary,
             source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             smoothing_factor)
-        print "Old average loss function value (-xBleu) over test set from previous epoch:"
-        print old_loss_value_test_set
-        print "Average loss function value with updated weights:"
-        print loss_value_test_set
-        print "Difference (new_loss_value - old_loss_value):"
-        print loss_value_test_set - old_loss_value_test_set
-        if loss_value_test_set > old_loss_value_test_set:
+        loss_value_history.append(loss_value_test_set)
+        print_loss_value_history(loss_value_history, test_set_size)
+
+        # TODO: CONVERGENCE TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST
+        #if loss_value_history[-2] > loss_value_history[-1]:
+        if False:
             converged = True
             print "CONVERGED!!!!!!!!!!!!"
             print "Saving weights from previous epoch to file"
@@ -169,7 +153,8 @@ def main(source_file_name, n_best_list_file_name, sbleu_score_list_file_name,
             np.savetxt('W2.gz', theta_previous[1])
         else:
             print "No overfitting, keep training..."
-            random.shuffle(training_order_list)
+            # TODO: SHUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUFLE
+            #random.shuffle(training_order_list)
 
 
 def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary,
@@ -181,10 +166,46 @@ def get_average_loss_value_of_test_sample(test_order_list, nn, dictionary,
             total_base_score_list, sbleu_score_list) \
             = get_everything(t_i, source_file_name, n_best_list_file_name,
                              sbleu_score_list_file_name)
-        xBlue_t_i = xbleu(nn, total_base_score_list, sbleu_score_list,
-                          phrase_pair_dict_n_list, dictionary, smoothing_factor)
+        xBlue_t_i, _ = xbleu(nn, total_base_score_list, sbleu_score_list,
+                             phrase_pair_dict_n_list, dictionary, smoothing_factor)
+        sys.stdout.write(str(-xBlue_t_i) + ", ")
+        sys.stdout.flush()
         loss_value_test_set -= xBlue_t_i
-    return loss_value_test_set/len(test_order_list) if len(test_order_list) > 0 else 0
+    print
+    return loss_value_test_set/len(test_order_list) if len(test_order_list) > 0 else float('nan')
+
+
+def debug_print_weights_after_update(nn, d_theta, error_term_dict):
+    size1, size2 = (d_theta[0].size, d_theta[1].size)
+    sum_error_terms = 0
+    for i, error in error_term_dict.iteritems():
+        sum_error_terms += error
+    avg_error_term = sum_error_terms / len(error_term_dict)
+    print "     Average error term:", avg_error_term
+    print "     Average weight change             | d_W1: %.9f, d_W2: %.9f" \
+        % (sum(sum(d_theta[0]))/size1, sum(sum(d_theta[1]))/size2)
+    print "     Average absolute weight change    | d_W1: %.9f, d_W2: %.9f" \
+        % (sum(sum(np.absolute(d_theta[0])))/size1, sum(sum(np.absolute(d_theta[1])))/size2)
+
+
+def print_loss_value_history(loss_value_history, test_set_size):
+    print "Test set size:", test_set_size, "(nr of source sentences)"
+    print "Old average loss function value (-xBleu) of test set, from previous epoch:"
+    print loss_value_history[-2]
+    print "Average loss function value using updated weights after gradient descent:"
+    print loss_value_history[-1]
+    print "Difference (new_loss_value - old_loss_value):"
+    print loss_value_history[-1] - loss_value_history[-2]
+
+    print
+    print "***********************************************************"
+    print "Loss function value after each epoch, starting from epoch 0"
+    print loss_value_history
+    print
+    print "Loss function value change after each epoch, starting from epoch 1"
+    print map(lambda (b, a): a - b, zip(loss_value_history[:-1], loss_value_history[1:]))
+    print "************************************************************"
+    print
 
 
 if __name__ == "__main__":

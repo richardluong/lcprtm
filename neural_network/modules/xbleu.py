@@ -1,6 +1,10 @@
 from __future__ import division
 import numpy as np
+import sys
 from cptm_neural_network import new_feature_value
+
+debug_mode = False
+
 
 def xbleu(nn, n_best_list_base_system_total_score_list, s_bleu_list, phrase_pair_list, dictionary, smoothing_factor):
     """
@@ -22,9 +26,15 @@ def get_Ej_translation_probability_list(nn, n_best_list_base_system_total_score_
     n_best_list_base_system_total_score_list = map(lambda h: np.exp(h), n_best_list_base_system_total_score_list)
 
     Ej_translation_probability_numerator_list = []
+    if debug_mode: print "Ej_translation_probability_numerator:"
     for j, total_score_j in enumerate(n_best_list_base_system_total_score_list):
         Ej_translation_probability_numerator = get_Ej_translation_probability_numerator(nn, n_best_list_base_system_total_score_list, phrase_pair_list[j], dictionary, smoothing_factor)
         Ej_translation_probability_numerator_list.append(Ej_translation_probability_numerator)
+        if debug_mode:
+            sys.stdout.write(str(Ej_translation_probability_numerator) + ", ")
+            sys.stdout.flush()
+    if debug_mode:
+        print
 
     Ej_translation_probability_denominator = sum(Ej_translation_probability_numerator_list)
 
