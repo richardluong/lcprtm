@@ -58,14 +58,13 @@ After multiple overnight test runs of the system that resulted in calculations t
 
 As of now, the most stable system we have produced came when the parameters were set as follows: `smoothing_factor = 10` and `learning_rate = 1000`. With these parameter values, we conducted two overnight test runs. 
 
-The first was to test the theoretical validity of our system, i.e. whether or not the implemented calculations of the gradients, as suggested by the paper, actually result in a lowering of the loss function defined as $-xBlue$. To do this, we used 30 training samples (sentence number 200 to 230 in the file `test.input.tok.1` provided by our teacher), performed the gradient descent training on the entire training set and then tested the new average $-xBlue$ score for the entire training set. I.e. we used the training set as our test set in order to test the theoretical validity of our neural network. The results (See Figure `lcprtm/Result/csv/Theoretical_validity_graph.png` ****INSERT GRAPH SOMEHOW???????????????*****) seem to suggest that the system is indeed performing a correct gradient descent.
+The first was to test the theoretical validity of our system, i.e. whether or not the implemented calculations of the gradients, as suggested by the paper, actually result in a lowering of the loss function defined as $-xBleu$. To do this, we used 30 training samples (sentence number 200 to 230 in the file `test.input.tok.1` provided by our teacher), performed the gradient descent training on the entire training set and then tested the new average $-xBleu$ score for the entire training set. I.e. we used the training set as our test set in order to test the theoretical validity of our neural network. The results (See Figure 1) seem to suggest that the system is indeed performing a correct gradient descent.
 
-The second overnight experiment was conducted on a larger training set with 180 training samples and 20 test samples, this time using source sentences 1 to 180 from our input file `test.input.tok.1` as training samples and sentences 181 to 200 as test samples. This choice of training samples means that the result are independent of the result in the first test, as none of the training samples overlap. Again, the result of our experiment suggest that the system works (*******INSERT lcprtm/Result/csv/Smoothing10_200-training-samples_graph.png************), however after 14 epochs the gradients became very large and the system calculations outputted NaN again. Detailed system output can be found in the `lcprtm/Result` directory and the results discussed in this section can be found in the `lcprtm/Result/csv/` directory.
+![Figure 1](Result/csv/Theoretical_validity_graph.png)
 
-********
-TO DO:
-lcprtm/Result/csv innheåller de två sista overnight körningarna jag gjorde som typ confirm att systemet funkar någorlunda bra. Bifoga graferna på nåt sätt?
-********
+The second overnight experiment was conducted on a larger training set with 180 training samples and 20 test samples, this time using source sentences 1 to 180 from our input file `test.input.tok.1` as training samples and sentences 181 to 200 as test samples. This choice of training samples means that the result are independent of the result in the first test, as none of the training samples overlap. Again, the result of our experiment suggest that the system works (See Figure 2), however after 14 epochs the gradients became very large and the system calculations outputted NaN again. Detailed system output can be found in the `lcprtm/Result` directory and the results discussed in this section can be found in the `lcprtm/Result/csv/` directory.
+
+![Figure 1](Result/csv/Smoothing10_200-training-samples_graph.png)
 
 Conclusion
 ----------
